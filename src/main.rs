@@ -18,9 +18,9 @@ fn main() -> Result<()> {
 
     loop {
         let text = get_text(&config).unwrap();
-        let state = State::new(text);
+        let mut state = State::new(text);
 
-        let should_loop = run_ui(&config, &state)?;
+        let should_loop = run_ui(&config, &mut state)?;
         if !should_loop {
             break;
         }

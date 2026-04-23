@@ -1,17 +1,17 @@
-use crossterm::event::KeyCode;
-use ratatui::{widgets::Paragraph, Frame};
+use crossterm::event::{KeyCode, KeyModifiers};
+use ratatui::{text::ToSpan, widgets::Paragraph, Frame};
 
 use crate::{config::Config, state::State};
 
 #[derive(Debug)]
 pub struct App<'a> {
-    state: &'a State,
+    state: &'a mut State,
     config: &'a Config,
     pub should_quit: bool,
 }
 
 impl<'a> App<'a> {
-    pub fn new(state: &'a State, config: &'a Config) -> Self {
+    pub fn new(state: &'a mut State, config: &'a Config) -> Self {
         Self {
             should_quit: false,
             state: state,
@@ -24,9 +24,29 @@ impl<'a> App<'a> {
         frame.render_widget(widget, frame.area());
     }
 
-    pub fn handle_events(&self, code: KeyCode) -> bool {
+    pub fn handle_events(&mut self, code: KeyCode, modifiers: KeyModifiers) -> bool {
+        if modifiers.contains(KeyModifiers::CONTROL) {
+            match code {
+                KeyCode::Char('c') => {
+                    self.state.should_loop = false;
+                    self.should_quit = false;
+                    return true;
+                }
+                KeyCode::Char('w') => {
+                    return self.state.handle_backspace();
+                }
+                _ => {
+                    return false;
+                }
+            }
+        }
         match code {
-            KeyCode::Char('q') => {
+            KeyCode::Char(c) => return self.state.handle_char(c),
+            KeyCode::Enter => return self.state.handle_char('\n'),
+            KeyCode::Backspace => return self.state.handle_backspace(),
+            KeyCode::Esc => {
+                self.state.should_loop = false;
+                self.should_quit = false;
                 return true;
             }
             _ => {

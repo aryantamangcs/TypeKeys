@@ -18,4 +18,15 @@ impl State {
             should_loop: false,
         }
     }
+
+    pub fn handle_char(&mut self, c: char) -> bool {
+        if c == 'q' {
+            return true;
+        }
+        self.strokes += 1;
+        return false;
+    }
+    pub fn handle_backspace(&mut self) -> bool {
+        return false;
+    }
 }
